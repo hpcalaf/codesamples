@@ -1,0 +1,4 @@
+name = PRC LTI Course Register
+description = LTI Registration Process
+package = PRC
+core = 7.x

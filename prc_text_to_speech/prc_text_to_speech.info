@@ -1,0 +1,4 @@
+name = PRC Text to Speech
+description = "Text to Speech (TextHelp SpeechStream) Module"
+package = PRC
+core = 7.x

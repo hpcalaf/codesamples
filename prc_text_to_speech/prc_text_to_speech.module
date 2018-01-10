@@ -1,0 +1,70 @@
+<?php
+
+function prc_text_to_speech_menu() {
+  $items['tts'] = array(
+    'title' => 'Text to Speech page',
+    'description' => 'Open the text to speech tool',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'tts_callback',
+  );
+
+  return $items;
+}
+
+function tts_callback($ajax) {
+  $commands = array();
+  // We need Drupal behaviors to kick off again. Should happen automatically.
+  $commands[] = ajax_command_html('.texttospeech', '<a onclick="TexthelpSpeechStream.addToolbar()" href="javascript:void(0)">Hide Text to Speech</a>');
+  $page = array('#type' => 'ajax', '#commands' => $commands);
+  ajax_deliver($page);
+}
+
+/**
+ *  Implements hook_node_view().
+ */
+function prc_text_to_speech_node_view($node, $view_mode, $langcode) {
+  // Only for display of link in "Full" display
+  if ($view_mode == 'full') {
+    $listable_types = array(
+      'digital_library_content' => array(
+        'link_id' => 'texttospeech',
+        'link_title' => 'Text to Speech',
+      ),
+    );
+
+    if (array_key_exists($node->type, $listable_types)) {
+      $link_id = $listable_types[$node->type]['link_id'];
+      $link_title = $listable_types[$node->type]['link_title'];
+      _prc_text_to_speech_link($node, $link_title, $link_id);
+    }
+  }
+}
+
+/**
+ * @param $node
+ * @param $link_title
+ * @param $link_id
+ */
+function _prc_text_to_speech_link($node, $link_title, $link_id) {
+  drupal_add_library('system', 'drupal.ajax');
+  $links[$link_id] = array(
+    'title' => t($link_title),
+    'href' => '', //"tts",
+    'attributes' => array(
+      'title' => t($link_title),
+      'class' => array('prc_text_to_speech'),
+    ),
+  );
+
+  // Set the path to script.
+  $script = drupal_get_path('module', 'prc_text_to_speech') . '/prc_text_to_speech.js';
+
+  drupal_add_js($script, array('scope' => 'header'));
+
+  $node->content['links'][$link_id] = array(
+    '#theme' => 'links__node__favorites',
+    '#links' => $links,
+    '#attributes' => array('class' => array('links', 'inline')),
+  );
+}
