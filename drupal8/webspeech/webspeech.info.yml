@@ -1,0 +1,11 @@
+name: Text to Speech (WebSpeech)
+
+type: module
+
+description: Add text-to-speech function to the website.
+
+package: Development
+
+core: 8.x
+
+configure: webspeech.form

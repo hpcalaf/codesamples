@@ -1,0 +1,99 @@
+<?php
+
+  /**
+   * Implements hook_help().
+   */
+  function webspeech_help($path, $arg) {
+    switch ($path) {
+      case 'admin/help#webspeech':
+        return theme('item_list', array(
+          'items' => array(
+            l(t("WebSpeech Demo"), 'webspeech/demo/simple'),
+          )));
+    }
+  }
+
+  /**
+   * Implements hook_permission().
+   */
+  function webspeech_permission() {
+    return array(
+      'access webspeech' => array('title' => t('Access WebSpeech')),
+      'config webspeech' => array('title' => t('Configure Webspeech')),
+    );
+  }
+
+  /**
+   * Implements hook_libraries_info().
+   */
+  function webspeech_libraries_info() {
+    $libraries['WebSpeech'] = array(
+      'files' => array(
+        'js' => array(
+          'WebSpeech.js',
+        ),
+      ),
+      'version arguments' => array(
+        'file' => 'WebSpeech.js',
+        'pattern' => '/version\s*:\s*[\"\']([^\"\']+)[\"\']/',
+        'lines' => 40,
+      ),
+      'callbacks' => array(
+        'post-load' => array(
+          'webspeech_add_init_script',
+        ),
+      ),
+    );
+
+    return $libraries;
+  }
+
+  /**
+   * Initilize WebSpeech.
+   * @global $base_url
+   */
+  function webspeech_initialize() {
+    if (function_exists('libraries_load')) {
+      // For libraries API 2.x
+      $library = libraries_load('WebSpeech');
+      if (empty($library['loaded'])) {
+        return FALSE;
+      }
+      else {
+        return TRUE;
+      }
+    }
+    else {
+      // For libraries API 1.x
+      global $base_path;
+      $library_path = libraries_get_path('WebSpeech', TRUE);
+      drupal_add_js("$library_path/WebSpeech.js", array('preprocess' => FALSE));
+      webspeech_add_init_script();
+      return TRUE;
+    }
+  }
+
+  /**
+   * Add js to init WebSpeech.
+   */
+  function webspeech_add_init_script() {
+    global $base_path;
+    drupal_add_js('jQuery(function() { soundManager.url = "' .
+      libraries_get_path('WebSpeech', TRUE) . '/soundmanager2";
+        WebSpeech.server = "' . variable_get('webspeech_server_url',
+        'http://wa.eguidedog.net/cgi-bin/ekho.pl') . '";
+        WebSpeech.setVoice("' . variable_get('webspeech_default_voice', 'en') . '");
+      });', 'inline');
+  }
+
+  /**
+   * Implements hook_block_info().
+   */
+  function webspeech_block_info() {
+    $blocks['webspeechBlock'] = array(
+      'info' => t('WebSpeech Controller'),
+      'cache' => DRUPAL_NO_CACHE,
+    );
+
+    return $blocks;
+  }

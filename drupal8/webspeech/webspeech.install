@@ -1,0 +1,65 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for WebSpeech module.
+ */
+
+/**
+ * Implements hook_uninstall().
+**/
+function webspeech_uninstall() {
+  $or = db_or();
+  $or->condition('name', 'webspeech_server_url');
+  $or->condition('name', 'webspeech_voice_setting_type');
+  $or->condition('name', 'webspeech_default_voice');
+  $or->condition('name', 'webspeech_content_id');
+
+  db_delete('variable')
+    ->condition($or)
+    ->execute();
+}
+
+
+/**
+ * Implements hook_requirements().
+ *
+ * Checks version and issues an error if there is a problem.
+ */
+function webspeech_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+
+  $library_path = libraries_get_path('WebSpeech');
+  $description = '';
+  $severity = REQUIREMENT_ERROR;
+  $value = '';
+  if (!file_exists("$library_path/WebSpeech.js")) {
+    $description = $t('Could not find WebSpeech library in @path.
+        Please get it from
+        <a href="http://sourceforge.net/projects/e-guidedog/files/WebSpeech/">
+        WebSpeech at eGuideDog</a>.', array('@path' => $library_path));
+  }
+  else {
+    $file_part = file_get_contents("$library_path/WebSpeech.js", FALSE, NULL,
+        -1, 4000);
+    if (preg_match("/rsion\s*:\s*[\"\']([^\"\']+)[\"\']/", $file_part,
+        $matches)) {
+      $ver = $matches[1];
+      $value = $t('@ver', array('@ver' => $ver));
+      $severity = REQUIREMENT_OK;
+    }
+    else {
+      $value = 'unknown version';
+      $severity = REQUIREMENT_WARNING;
+    }
+  }
+
+  $requirements['webspeech_library'] = array(
+    'title' => $t('WebSpeech library'),
+    'description' => $description,
+    'value' => $value,
+    'severity' => $severity,
+  );
+
+  return $requirements;
+}

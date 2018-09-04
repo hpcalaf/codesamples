@@ -1,0 +1,10 @@
+webspeech.settings
+  title: 'WebSpeech settings'
+  description: 'Manage Webspeech settings for the site'
+  route_name: webspeech.admin
+  weight: 100
+
+webspeech.demopage
+  title: 'WebSpeech Voices Demo'
+  description: 'Show main voices of WebSpeech.'
+  route_name: webspeech.demo
